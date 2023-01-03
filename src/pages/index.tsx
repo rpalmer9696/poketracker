@@ -1,7 +1,10 @@
 import { type NextPage } from "next";
-import AuthShowcase from "../components/authButton";
+import AuthShowcase from "@/components/authButton";
+import { trpc } from "@/utils/trpc";
 
 const Home: NextPage = () => {
+  trpc.pokemon.populatePokemon.useQuery();
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center">
       <div className="container flex flex-col items-center justify-center gap-12 px-4 py-16 ">
@@ -10,6 +13,9 @@ const Home: NextPage = () => {
         </h1>
         <div className="flex flex-col items-center gap-2">
           <p className="text-2xl text-white">Ready to track some Pokemon?</p>
+          <a className="text-l text-blue-200 underline" href="/pokeList">
+            Go to Tracker
+          </a>
           <AuthShowcase positionStyle="flex flex-col items-center justify-center gap-4" />
         </div>
       </div>

@@ -1,28 +1,12 @@
 import type { GetServerSideProps, NextPage } from "next";
 import { getSession } from "next-auth/react";
-import AuthShowcase from "../components/authButton";
-
-const pokemon = [
-  "Bulbasaur",
-  "Ivysaur",
-  "Venusaur",
-  "Charmander",
-  "Charmeleon",
-  "Charizard",
-  "Squirtle",
-  "Wartortle",
-  "Blastoise",
-  "Caterpie",
-  "Metapod",
-  "Butterfree",
-  "Weedle",
-  "Kakuna",
-  "Beedrill",
-  "Pidgey",
-  "Pidgeotto",
-];
+import AuthShowcase from "@/components/authButton";
+import PokemonCard from "@/components/pokemonCard";
+import { trpc } from "@/utils/trpc";
 
 const PokeList: NextPage = () => {
+  const pokemonData = trpc.pokemon.listPokemon.useQuery();
+
   return (
     <>
       <div className="flex flex-row items-center justify-between p-4">
@@ -38,10 +22,10 @@ const PokeList: NextPage = () => {
           type="search"
         />
       </div>
-      <div className="grid auto-cols-auto place-items-center p-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        {pokemon.map((item, id) => (
-          <div key={id}>{item}</div>
-        ))}
+      <div className="grid auto-cols-auto place-items-center gap-4 p-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+        {pokemonData.data?.map((item, id) => {
+          return <PokemonCard key={id} pokemon={item} />;
+        })}
       </div>
     </>
   );
