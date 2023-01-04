@@ -8,6 +8,8 @@ Made with Create T3 App
 
 - [] Get search working
 
+- [] Get other login apis working
+
 - [] Add support for other regions
 
 - [] Allow additional details to be set
