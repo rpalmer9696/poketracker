@@ -1,11 +1,18 @@
 import type { GetServerSideProps, NextPage } from "next";
-import { getSession } from "next-auth/react";
+import { getSession, useSession } from "next-auth/react";
 import AuthShowcase from "@/components/authButton";
 import PokemonCard from "@/components/pokemonCard";
 import { trpc } from "@/utils/trpc";
 
 const PokeList: NextPage = () => {
+  const { data: sessionData } = useSession();
   const pokemonData = trpc.pokemon.listPokemon.useQuery();
+
+  const caughtPokemon = trpc.pokemon.listCaughtPokemon.useQuery({
+    email: sessionData?.user?.email as string,
+  });
+
+  const caughtPokemonData = caughtPokemon.data;
 
   return (
     <>
@@ -24,7 +31,13 @@ const PokeList: NextPage = () => {
       </div>
       <div className="grid auto-cols-auto place-items-center gap-4 p-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {pokemonData.data?.map((item, id) => {
-          return <PokemonCard key={id} pokemon={item} />;
+          return (
+            <PokemonCard
+              key={id}
+              pokemon={item}
+              isCaught={checkPokemonIsCaught(item, caughtPokemonData)}
+            />
+          );
         })}
       </div>
     </>
@@ -50,4 +63,10 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
       session,
     },
   };
+};
+
+const checkPokemonIsCaught = (pokemon, caughtPokemon) => {
+  return caughtPokemon.some((p) => {
+    return p.regionalDexNo === pokemon.regionalDexNo;
+  });
 };

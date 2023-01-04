@@ -22,28 +22,102 @@ export const pokemonRouter = router({
       const pokemonCollection = await getPokemonData(config.region);
       await prisma.pokemon.createMany({ data: pokemonCollection });
     }
+
+    return data;
   }),
   listPokemon: publicProcedure.query((req) => {
     return prisma.pokemon.findMany() || [];
   }),
-  addPokemon: publicProcedure
+  listCaughtPokemon: publicProcedure
+    .input(
+      z.object({
+        email: z.string(),
+      })
+    )
+    .query(async (req): Promise<Pokemon[]> => {
+      const user = await prisma.user.findUnique({
+        where: { email: req.input.email },
+      });
+
+      const caughtPokemon = await prisma.caughtPokemon.findMany({
+        where: {
+          userId: user.id,
+        },
+      });
+
+      return Promise.all(
+        caughtPokemon.map(async (pokemon): Promise<Pokemon> => {
+          return prisma.pokemon.findUnique({
+            where: {
+              id: pokemon.pokemonId,
+            },
+          });
+        })
+      );
+    }),
+  addPokemonToUser: publicProcedure
     .input(
       z.object({
         name: z.string(),
         region: z.string(),
         regionalDexNo: z.number(),
-        nationalDexNo: z.number(),
+        email: z.string(),
       })
     )
-    .mutation((req) => {
-      const pokemon: Pokemon = {
-        name: req.input.name,
-        region: req.input.region,
-        regionalDexNo: req.input.regionalDexNo,
-        nationalDexNo: req.input.nationalDexNo,
-      };
+    .mutation(async (req) => {
+      const user = await prisma.user.findUnique({
+        where: { email: req.input.email },
+      });
 
-      prisma.pokemon?.create({ data: pokemon });
+      const pokemon = await prisma.pokemon.findFirst({
+        where: {
+          region: req.input.region,
+          regionalDexNo: req.input.regionalDexNo,
+        },
+      });
+
+      await prisma.caughtPokemon.create({
+        data: {
+          userId: user.id,
+          pokemonId: pokemon.id,
+        },
+      });
+
+      return pokemon;
+    }),
+  removePokemonFromUser: publicProcedure
+    .input(
+      z.object({
+        name: z.string(),
+        region: z.string(),
+        regionalDexNo: z.number(),
+        email: z.string(),
+      })
+    )
+    .mutation(async (req) => {
+      const user = await prisma.user.findUnique({
+        where: { email: req.input.email },
+      });
+
+      const pokemon = await prisma.pokemon.findFirst({
+        where: {
+          region: req.input.region,
+          regionalDexNo: req.input.regionalDexNo,
+        },
+      });
+
+      const record = await prisma.caughtPokemon.findFirst({
+        where: {
+          userId: user.id,
+          pokemonId: pokemon.id,
+        },
+      });
+
+      await prisma.caughtPokemon.delete({
+        where: {
+          id: record.id,
+        },
+      });
 
       return pokemon;
     }),
