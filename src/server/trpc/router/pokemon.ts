@@ -6,6 +6,7 @@ import { prisma } from "@/server/db/client";
 
 import { getPokemonData } from "@/utils/getPokemonData";
 import config from "@/server/common/config";
+import { TRPCError } from "@trpc/server";
 
 type Pokemon = {
   name: string;
@@ -41,12 +42,12 @@ export const pokemonRouter = router({
 
       const caughtPokemon = await prisma.caughtPokemon.findMany({
         where: {
-          userId: user.id,
+          userId: user?.id,
         },
       });
 
-      return Promise.all(
-        caughtPokemon.map(async (pokemon): Promise<Pokemon> => {
+      const pokemon = await Promise.all(
+        caughtPokemon.map(async (pokemon) => {
           return prisma.pokemon.findUnique({
             where: {
               id: pokemon.pokemonId,
@@ -54,6 +55,8 @@ export const pokemonRouter = router({
           });
         })
       );
+
+      return pokemon.filter((pokemon) => pokemon !== null) as Pokemon[];
     }),
   addPokemonToUser: publicProcedure
     .input(
@@ -76,14 +79,21 @@ export const pokemonRouter = router({
         },
       });
 
-      await prisma.caughtPokemon.create({
-        data: {
-          userId: user.id,
-          pokemonId: pokemon.id,
-        },
-      });
+      if (user && pokemon) {
+        await prisma.caughtPokemon.create({
+          data: {
+            userId: user.id,
+            pokemonId: pokemon.id,
+          },
+        });
 
-      return pokemon;
+        return pokemon;
+      }
+
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Either the provided email or pokemon does not exist.",
+      });
     }),
   removePokemonFromUser: publicProcedure
     .input(
@@ -108,14 +118,14 @@ export const pokemonRouter = router({
 
       const record = await prisma.caughtPokemon.findFirst({
         where: {
-          userId: user.id,
-          pokemonId: pokemon.id,
+          userId: user?.id,
+          pokemonId: pokemon?.id,
         },
       });
 
       await prisma.caughtPokemon.delete({
         where: {
-          id: record.id,
+          id: record?.id,
         },
       });
 

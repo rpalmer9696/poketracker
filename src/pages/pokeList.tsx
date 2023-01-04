@@ -4,6 +4,10 @@ import AuthShowcase from "@/components/authButton";
 import PokemonCard from "@/components/pokemonCard";
 import { trpc } from "@/utils/trpc";
 
+type Pokemon = {
+  regionalDexNo: number;
+};
+
 const PokeList: NextPage = () => {
   const { data: sessionData } = useSession();
   const pokemonData = trpc.pokemon.listPokemon.useQuery();
@@ -65,7 +69,14 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   };
 };
 
-const checkPokemonIsCaught = (pokemon, caughtPokemon) => {
+const checkPokemonIsCaught = (
+  pokemon: Pokemon,
+  caughtPokemon: Pokemon[] | undefined
+) => {
+  if (!caughtPokemon) {
+    return false;
+  }
+
   return caughtPokemon.some((p) => {
     return p.regionalDexNo === pokemon.regionalDexNo;
   });
