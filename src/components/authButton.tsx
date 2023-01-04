@@ -14,7 +14,7 @@ const AuthShowcase = ({ positionStyle }: AuthShowcaseProps): JSX.Element => {
         onClick={
           sessionData
             ? () => signOut()
-            : () => signIn("", { callbackUrl: "/pokeList" })
+            : () => signIn("google", { callbackUrl: "/pokeList" })
         }
       >
         {sessionData ? "Sign out" : "Sign in"}
