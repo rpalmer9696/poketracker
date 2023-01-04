@@ -2,6 +2,7 @@ import { type NextPage } from "next";
 import AuthShowcase from "@/components/authButton";
 import { trpc } from "@/utils/trpc";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 
 const Home: NextPage = () => {
   const { data: sessionData } = useSession();
@@ -16,9 +17,9 @@ const Home: NextPage = () => {
         <div className="flex flex-col items-center gap-2">
           <p className="text-2xl text-white">Ready to track some Pokemon?</p>
           {sessionData ? (
-            <a className="text-l text-blue-200 underline" href="/pokeList">
-              Go to Tracker
-            </a>
+            <Link href="/pokeList">
+              <a className="text-l text-blue-200 underline">Go to Tracker</a>
+            </Link>
           ) : (
             ""
           )}
