@@ -6,14 +6,11 @@ Made with Create T3 App
 
 ## Roadmap
 
-- [] Get search working
-
+- [x] Get search working
 - [] Get other login apis working
-
 - [] Add support for other regions
-
+- [] Add support for TCG
 - [] Allow additional details to be set
-
 - [] Add system to allow users to trade between themselves
 
 ## Authors
