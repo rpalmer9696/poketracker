@@ -131,4 +131,22 @@ export const pokemonRouter = router({
 
       return pokemon;
     }),
+  searchPokemon: publicProcedure
+    .input(
+      z.object({
+        name: z.string(),
+      })
+    )
+    .query(async (req) => {
+      if (!req.input.name) return prisma.pokemon.findMany() || [];
+      const pokemon = await prisma.pokemon.findMany({
+        where: {
+          name: {
+            contains: req.input.name,
+          },
+        },
+      });
+
+      return pokemon;
+    }),
 });
